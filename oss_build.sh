@@ -104,7 +104,7 @@ for python_version in $PYTHON_VERSIONS; do
 
   if [ "$(uname)" = "Darwin" ]; then
     bazel_config=""
-    version=`sw_vers -productVersion | sed 's/\./_/g' | cut -d"_" -f1,2`
+    version=`${PYTHON_BIN_PATH} -c 'import platform; print(platform.mac_ver()[0].replace(".", "_"))'`
     PLATFORM="macosx_${version}_"`uname -m`
   else
     bazel_config="--config=manylinux2010"

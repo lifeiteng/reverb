@@ -86,29 +86,14 @@ def _find_python_solib_path(repo_ctx):
         [
             get_python_path(repo_ctx),
             "-c",
-            "import sys; vi = sys.version_info; " +
-            "sys.stdout.write('python{}.{}'.format(vi.major, vi.minor))",
+            "import sysconfig;" +
+            "print('\\n'.join(sysconfig.get_config_vars('LIBDIR', 'INSTSONAME')))"
         ],
     )
     if exec_result.return_code != 0:
         fail("Could not locate python shared library path:\n{}"
             .format(exec_result.stderr))
-    version = exec_result.stdout.splitlines()[-1]
-    exec_result = repo_ctx.execute(
-        ["{}-config".format(version), "--configdir"],
-        quiet = True,
-    )
-    if exec_result.return_code != 0:
-        fail("Could not locate python shared library path:\n{}"
-            .format(exec_result.stderr))
-
-    if is_darwin(repo_ctx):
-        basename = "lib{}m.dylib".format(version)
-        solib_dir = "/".join(exec_result.stdout.splitlines()[-1].split("/")[:-2])
-    else:
-        basename = "lib{}.so".format(version)
-        solib_dir = exec_result.stdout.splitlines()[-1]
-
+    solib_dir, basename = exec_result.stdout.splitlines()
     full_path = repo_ctx.path("{}/{}".format(solib_dir, basename))
     if not full_path.exists:
         basename = basename.replace('m.dylib', '.dylib')
